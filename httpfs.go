@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	fs "github.com/altid/fslib"
+	"github.com/altid/libs/fs"
 )
 
 var (
@@ -21,7 +21,7 @@ func main() {
 	var b browser
 	b = make(map[string]string)
 	logdir := fs.GetLogDir("https")
-	c, err := fs.CreateCtrlFile(b, logdir, *mtpt, "http", "document")
+	c, err := fs.CreateCtlFile(b, logdir, *mtpt, "http", "document")
 	if err != nil {
 		log.Fatal(err)
 	}

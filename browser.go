@@ -1,7 +1,7 @@
 package main
 
 import (
-	fs "github.com/altid/fslib"
+	"github.com/altid/libs/fs"
 )
 
 // google.ca | google.ca[1] | google.ca [2]
@@ -50,4 +50,3 @@ func (b browser) Default(c *fs.Control, cmd, from, msg string) error {
 	}
 	return nil
 }
-
