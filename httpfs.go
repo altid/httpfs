@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/altid/libs/config"
 	"github.com/altid/libs/fs"
 )
 
@@ -20,7 +21,7 @@ func main() {
 	}
 	var b browser
 	b = make(map[string]string)
-	logdir := fs.GetLogDir("https")
+	logdir := config.GetLogDir("https")
 	c, err := fs.CreateCtlFile(b, logdir, *mtpt, "http", "document")
 	if err != nil {
 		log.Fatal(err)

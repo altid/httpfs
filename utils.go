@@ -30,18 +30,26 @@ type sometype struct {
 func (p *sometype) Img(link string) error {
 	u, err := url.Parse(p.url)
 	u.Path = path.Dir(u.Path) + "/" + link
+
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
 	name, err := url.Parse(link)
 	if err != nil {
 		return fmt.Errorf("Unable to parse URL for image %v", err)
 	}
-	img := p.c.ImageWriter(p.uri, name.Path)
+
+	img, err := p.c.ImageWriter(p.uri, name.Path)
+	if err != nil {
+		return err
+	}
+
 	defer img.Close()
 	_, err = io.Copy(img, resp.Body)
+
 	return err
 }
 
@@ -57,14 +65,24 @@ func fetchSite(c *fs.Control, uri, url string) error {
 	if err != nil {
 		return err
 	}
-	m := c.MainWriter(uri, "document")
+	m, err := c.MainWriter(uri, "document")
+	if err != nil {
+		return err
+	}
+
+	s, err := c.NavWriter(uri)
+	if err != nil {
+		return err
+	}
+
 	p := &sometype{
 		c:   c,
 		uri: uri,
 		url: url,
-		s:   c.NavWriter(uri),
+		s:   s,
 	}
 	defer p.s.Close()
+
 	body := html.NewHTMLCleaner(m, p)
 	defer body.Close()
 	if err := body.Parse(resp.Body); err != io.EOF {

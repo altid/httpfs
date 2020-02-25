@@ -19,6 +19,7 @@ func (b browser) Open(c *fs.Control, request string) error {
 	if err != nil {
 		return err
 	}
+
 	// make sure we create new one like google.ca/search[1] if a buffer already exists
 	b[uri] = req
 	c.CreateBuffer(uri, "document")
@@ -40,6 +41,7 @@ func (b browser) Link(c *fs.Control, from, request string) error {
 		b.Close(c, from)
 		return b.Open(c, request)
 	}
+
 	return fetchSite(c, uri, request)
 }
 
@@ -48,5 +50,6 @@ func (b browser) Default(c *fs.Control, cmd, from, msg string) error {
 	case "reload":
 		fetchSite(c, from, b[from])
 	}
+
 	return nil
 }
