@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	mtpt = flag.String("p", "/tmp/altid", "Path for filesystem")
+	mtpt  = flag.String("p", "/tmp/altid", "Path for filesystem")
+	debug = flag.Bool("d", false, "enable debug logging")
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 	var b browser
 	b = make(map[string]string)
 	logdir := config.GetLogDir("https")
-	c, err := fs.CreateCtlFile(b, logdir, *mtpt, "http", "document")
+	c, err := fs.CreateCtlFile(b, logdir, *mtpt, "http", "document", *debug)
 	if err != nil {
 		log.Fatal(err)
 	}
