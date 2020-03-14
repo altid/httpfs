@@ -83,8 +83,13 @@ func fetchSite(c *fs.Control, uri, url string) error {
 	}
 	defer p.s.Close()
 
-	body := html.NewHTMLCleaner(m, p)
+	body, err := html.NewHTMLCleaner(m, p)
+	if err != nil {
+		return err
+	}
+
 	defer body.Close()
+
 	if err := body.Parse(resp.Body); err != io.EOF {
 		return err
 	}
