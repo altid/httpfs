@@ -9,27 +9,31 @@ import (
 
 	"github.com/altid/libs/fs"
 	"github.com/altid/libs/html"
-	"github.com/altid/libs/markup"
 )
 
-func getUri(request string) (string, error) {
+func getURI(request string) (string, error) {
 	u, err := url.Parse(request)
 	if err != nil {
 		return "", err
 	}
+
 	return u.Host, nil
 }
 
 type sometype struct {
 	c   *fs.Control
-	s   *fs.WriteCloser
+	s   io.WriteCloser
 	uri string
 	url string
 }
 
-func (p *sometype) Img(link string) error {
+func (p *sometype) Img(img *html.Image) error {
 	u, err := url.Parse(p.url)
-	u.Path = path.Dir(u.Path) + "/" + link
+	if err != nil {
+		return err
+	}
+
+	u.Path = path.Dir(u.Path) + "/" + string(img.Src)
 
 	resp, err := http.Get(u.String())
 	if err != nil {
@@ -37,24 +41,24 @@ func (p *sometype) Img(link string) error {
 	}
 	defer resp.Body.Close()
 
-	name, err := url.Parse(link)
+	name, err := url.Parse(string(img.Src))
 	if err != nil {
 		return fmt.Errorf("Unable to parse URL for image %v", err)
 	}
 
-	img, err := p.c.ImageWriter(p.uri, name.Path)
+	iw, err := p.c.ImageWriter(p.uri, name.Path)
 	if err != nil {
 		return err
 	}
 
-	defer img.Close()
-	_, err = io.Copy(img, resp.Body)
+	defer iw.Close()
+	_, err = io.Copy(iw, resp.Body)
 
 	return err
 }
 
 // Called for each line in a <nav>
-func (p *sometype) Nav(u *markup.Url) error {
+func (p *sometype) Nav(u *html.URL) error {
 	fmt.Fprintf(p.s, "%s\n", u)
 	return nil
 }
@@ -83,7 +87,7 @@ func fetchSite(c *fs.Control, uri, url string) error {
 	}
 	defer p.s.Close()
 
-	body, err := html.NewHTMLCleaner(m, p)
+	body, err := html.NewCleaner(m, p)
 	if err != nil {
 		return err
 	}

@@ -1,55 +1,121 @@
 package main
 
 import (
+	"context"
+	"errors"
+
 	"github.com/altid/libs/fs"
 )
 
 // google.ca | google.ca[1] | google.ca [2]
-type browser map[string]string
+type browser struct {
+	buffers map[string]*buffer
+	cancel  context.CancelFunc
+}
 
 // TODO(halfwit): We want to handle back/forward, so we'll need a list for each browser entry
 type buffer struct {
-	history []string
+	history []*tuple
 	current int
 }
 
-func (b browser) Open(c *fs.Control, request string) error {
-	req := "https://" + request
-	uri, err := getUri(req)
+type tuple struct {
+	uri string
+	req string
+}
+
+func newBrowser(cancel context.CancelFunc) (*browser, error) {
+	b := &browser{
+		buffers: make(map[string]*buffer),
+		cancel:  cancel,
+	}
+
+	uri, err := getURI(*homepage)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// make sure we create new one like google.ca/search[1] if a buffer already exists
-	b[uri] = req
-	c.CreateBuffer(uri, "document")
-	return fetchSite(c, uri, req)
+	b.push(uri, *homepage)
+	return b, nil
 }
 
-func (b browser) Close(c *fs.Control, uri string) error {
-	delete(b, uri)
-	return c.DeleteBuffer(uri, "document")
-}
+func (b browser) Run(c *fs.Control, cmd *fs.Command) error {
+	switch cmd.Name {
+	case "field":
+		// This is denoted by an [>Tag](hint) 
+	case "open":
+		req := "https://" + cmd.Args[0]
 
-func (b browser) Link(c *fs.Control, from, request string) error {
-	// find uri based on from
-	uri, err := getUri(request)
-	if err != nil {
-		return err
-	}
-	if b[from] != uri {
-		b.Close(c, from)
-		return b.Open(c, request)
-	}
+		uri, err := getURI(req)
+		if err != nil {
+			return err
+		}
 
-	return fetchSite(c, uri, request)
-}
+		b.push(uri, req)
+		c.CreateBuffer(uri, "document")
+		return fetchSite(c, uri, req)
+	case "close":
+		b.pop(cmd.Args[0])
+		return c.DeleteBuffer(cmd.Args[0], "document")
+	case "link":
+		// find uri based on from
+		uri, err := getURI(cmd.Args[0])
+		if err != nil {
+			return err
+		}
 
-func (b browser) Default(c *fs.Control, cmd, from, msg string) error {
-	switch cmd {
-	case "reload":
-		fetchSite(c, from, b[from])
+		if cmd.From == "" {
+			return errors.New("Unable to swap buffers")
+		}
+
+		if b.uri(cmd.From) != uri {
+			b.pop(cmd.Args[0])
+			c.DeleteBuffer(cmd.Args[0], "document")
+
+			// After delete, send open cmd
+			cmd.Name = "open"
+			return b.Run(c, cmd)
+		}
+
+		return fetchSite(c, uri, cmd.Args[0])
+	//case "reload":
+	//	fetchSite(c, from, b.uri(from))
+	case "back":
+	case "forward":
 	}
 
 	return nil
+}
+
+func (b *browser) Quit() {
+	b.cancel()
+}
+
+func (b *browser) push(uri, req string) {
+	t := &tuple{
+		uri: uri,
+		req: req,
+	}
+
+	if _, ok := b.buffers[uri]; !ok {
+		// make new and append
+		b.buffers[uri] = &buffer{}
+	}
+
+	b.buffers[uri].history = append(b.buffers[uri].history, t)
+	b.buffers[uri].current = len(b.buffers[uri].history)
+}
+
+func (b *browser) pop(uri string) {
+
+}
+
+func (b *browser) uri(req string) string {
+	for _, buff := range b.buffers {
+		if buff.history[buff.current].req == req {
+			return buff.history[buff.current].uri
+		}
+	}
+
+	return ""
 }
