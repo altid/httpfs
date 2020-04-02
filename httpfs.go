@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 	"os"
@@ -27,8 +26,9 @@ func main() {
 	}
 
 	conf := &struct {
-		Log types.Logdir
-	}{"none"}
+		Log    types.Logdir        `altid:"logdir,no_prompt"`
+		Listen types.ListenAddress `altid:"listen_address,no_prompt"`
+	}{"none", "none"}
 
 	if *setup {
 		if e := config.Create(conf, *srv, "", *debug); e != nil {
@@ -42,13 +42,12 @@ func main() {
 		log.Fatal(e)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	b, err := newBrowser(cancel)
+	b, err := newBrowser()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c, err := fs.CreateCtlFile(ctx, b, string(conf.Log), *mtpt, *srv, "document", *debug)
+	c, err := fs.New(b, string(conf.Log), *mtpt, *srv, "document", *debug)
 	if err != nil {
 		log.Fatal(err)
 	}

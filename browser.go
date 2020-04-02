@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 
 	"github.com/altid/libs/fs"
@@ -10,7 +9,6 @@ import (
 // google.ca | google.ca[1] | google.ca [2]
 type browser struct {
 	buffers map[string]*buffer
-	cancel  context.CancelFunc
 }
 
 // TODO(halfwit): We want to handle back/forward, so we'll need a list for each browser entry
@@ -24,10 +22,9 @@ type tuple struct {
 	req string
 }
 
-func newBrowser(cancel context.CancelFunc) (*browser, error) {
+func newBrowser() (*browser, error) {
 	b := &browser{
 		buffers: make(map[string]*buffer),
-		cancel:  cancel,
 	}
 
 	uri, err := getURI(*homepage)
@@ -42,7 +39,7 @@ func newBrowser(cancel context.CancelFunc) (*browser, error) {
 func (b browser) Run(c *fs.Control, cmd *fs.Command) error {
 	switch cmd.Name {
 	case "field":
-		// This is denoted by an [>Tag](hint) 
+		// This is denoted by an [>Tag](hint)
 	case "open":
 		req := "https://" + cmd.Args[0]
 
@@ -88,7 +85,7 @@ func (b browser) Run(c *fs.Control, cmd *fs.Command) error {
 }
 
 func (b *browser) Quit() {
-	b.cancel()
+
 }
 
 func (b *browser) push(uri, req string) {
