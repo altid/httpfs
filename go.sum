@@ -1,7 +1,7 @@
 9fans.net/go v0.0.2 h1:RYM6lWITV8oADrwLfdzxmt8ucfW6UtP9v1jg4qAbqts=
 9fans.net/go v0.0.2/go.mod h1:lfPdxjq9v8pVQXUMBCx5EO5oLXWQFlKRQgs1kEkjoIM=
-github.com/altid/libs v0.1.6-final h1:vx13TtsQOuSauY4l5pjosnQgfBUTXk1505Xu11iUwnM=
-github.com/altid/libs v0.1.6-final/go.mod h1:XX9tfc6JC3aXrRkDpXxDqfLNHLSo8l5RG8UWMwXjD68=
+github.com/altid/libs v0.1.6-patched h1:76uQRElMnxXaHmVw/Q7FnmVi5EQlaBvXNQrH39qHSPM=
+github.com/altid/libs v0.1.6-patched/go.mod h1:XX9tfc6JC3aXrRkDpXxDqfLNHLSo8l5RG8UWMwXjD68=
 github.com/google/gofuzz v1.1.0 h1:Hsa8mG0dQ46ij8Sl2AYJDUv1oA9/d6Vk+3LG99Oe02g=
 github.com/google/gofuzz v1.1.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/mischief/ndb v0.0.0-20131219140803-a27299009a40 h1:ip5r+E7C1yo2glg9M2mzsI498AxAGXgIX9hfBbeVjJQ=
